@@ -3,11 +3,6 @@
 Documentation, guides and tutorials are available
 on <a href="https://vuestic.dev">vuestic.dev</a>
 
-### Official Discord Server
-
-Ask questions at the official
-community [discord server](https://discord.gg/jTKTjj2weV)
-
 ### Installation
 
 First of all, make sure you have all prerequisites installed:
