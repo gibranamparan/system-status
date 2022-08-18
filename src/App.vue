@@ -3,8 +3,9 @@
 </template>
 
 <script setup lang="ts">
-  import { useTheme } from './services/vuestic-ui/themes'
-  useTheme()
+  import { THEME_NAMES, useTheme } from './services/vuestic-ui/themes'
+  const { setTheme } = useTheme()
+  setTheme(THEME_NAMES.SEMI_DARK as keyof typeof THEME_NAMES)
 </script>
 
 <style lang="scss">
