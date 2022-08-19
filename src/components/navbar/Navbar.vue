@@ -10,7 +10,7 @@
             @click="isSidebarMinimized = !isSidebarMinimized"
           />
           <router-link to="/">
-            <img src="/public/ensure360_logo.png" class="logo" /><br />
+            <img src="/ensure360_logo.png" class="logo" /><br />
             <span :style="{ color: colors.secondary }">System Dashboard</span>
           </router-link>
         </div>
