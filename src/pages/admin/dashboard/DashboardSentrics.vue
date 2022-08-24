@@ -4,7 +4,7 @@
       <va-card-title>ZigBee Active List</va-card-title>
       <va-card-content>
         <div class="table-wrapper">
-          <table class="va-table">
+          <table class="va-table va-table--striped va-table--hoverable">
             <thead>
               <tr>
                 <th>Hostname</th>
@@ -73,8 +73,6 @@
       </va-card-content>
     </va-card>
 
-    <!-- PIE GRAPHIC FOR TYPES OF ALARMS -->
-    <!-- PIE GRAPHIC ALARMS CLOSED, CREATED, ETC -->
     <div class="row">
       <div class="flex md6 xs12">
         <va-card v-if="supervisionsDataGenerated" class="chart-widget">
@@ -94,13 +92,48 @@
         </va-card>
       </div>
     </div>
+
+    <va-card>
+      <va-card-title>Devices</va-card-title>
+      <va-card-content>
+        <div class="table-wrapper">
+          <table class="va-table va-table--striped va-table--hoverable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="device in devices" :key="device.id">
+                <td>{{ device.id }}</td>
+                <td>{{ device.name }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </va-card-content>
+    </va-card>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue'
+  import { ref, watch, computed } from 'vue'
   import { useChartData } from '@/data/charts/composables/useChartData'
   import VaChart from '@/components/va-charts/VaChart.vue'
+  import { useQuery } from '@vue/apollo-composable'
+  import gql from 'graphql-tag'
+
+  const { result } = useQuery(gql`
+    query getDevices {
+      devices {
+        id
+        name
+      }
+    }
+  `)
+
+  const devices = computed(() => result?.value?.devices || [])
 
   // tables demo
   const activeDevicesData = [
