@@ -1,79 +1,40 @@
 <template>
   <div class="markup-tables flex">
-    <va-card class="flex mb-4">
-      <va-card-title>ZigBee Active List</va-card-title>
-      <va-card-content>
-        <div class="table-wrapper">
-          <table class="va-table va-table--striped va-table--hoverable">
-            <thead>
-              <tr>
-                <th>Hostname</th>
-                <th>ZigBee MAC</th>
-                <th>Node ID</th>
-                <th>Interface</th>
-                <th>Interface Address</th>
-                <th>Wifi SSID</th>
-                <th>Wifi Signal</th>
-                <th>Age</th>
-                <th>Uptime</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              <tr v-for="device in activeDevices" :key="device.id">
-                <td>{{ device.hostname }}</td>
-                <td>{{ device.mac }}</td>
-                <td>{{ device.nodeId }}</td>
-                <td>{{ device.interface }}</td>
-                <td>{{ device.address }}</td>
-                <td>{{ device.ssid }}</td>
-                <td>{{ device.signal }}</td>
-                <td>{{ device.age }}</td>
-                <td>{{ device.uptime }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </va-card-content>
-    </va-card>
-
     <va-card>
-      <va-card-title>ZigBee Inactive List</va-card-title>
+      <va-card-title>Devices</va-card-title>
       <va-card-content>
+        <div class="row">
+          <va-input v-model="filter" class="flex mb-2 md6" placeholder="Filter..." />
+        </div>
         <div class="table-wrapper">
-          <table class="va-table va-table--striped va-table--hoverable">
-            <thead>
-              <tr>
-                <th>Hostname</th>
-                <th>ZigBee MAC</th>
-                <th>Node ID</th>
-                <th>Interface</th>
-                <th>Interface Address</th>
-                <th>Wifi SSID</th>
-                <th>Wifi Signal</th>
-                <th>Age</th>
-                <th>Uptime</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="device in inactiveDevices" :key="device.id">
-                <td>{{ device.hostname }}</td>
-                <td>{{ device.mac }}</td>
-                <td>{{ device.nodeId }}</td>
-                <td>{{ device.interface }}</td>
-                <td>{{ device.address }}</td>
-                <td>{{ device.ssid }}</td>
-                <td>{{ device.signal }}</td>
-                <td>{{ device.age }}</td>
-                <td>{{ device.uptime }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <va-data-table :items="devicesData" :columns="columns" :filter="filter" items-track-by="mac" stripped>
+            <template #cell(voltage)="{ source }">
+              <span>{{ source.toFixed(3) }} V</span>
+            </template>
+            <!-- <template #cell(voltage)="{source, rowData}">
+              <va-popover placement="right">
+                <span>{{ source.toFixed(3) }} V</span>
+                <template #title>
+                  Other Readings
+                </template>
+                <template #body>
+                  <template v-for="sr in rowData.otherReadings">
+                    <span>{{sr.value.toFixed(3)}}</span> <b>{{sr.units}}</b><br>
+                  </template>
+                </template>
+              </va-popover>
+            </template> -->
+            <template #cell(otherReadings)="{ source }">
+              <template v-for="(sr, idx) in source" :key="idx">
+                <span>{{ sr.value.toFixed(3) }}</span> <b>{{ sr.units }}</b
+                ><br />
+              </template>
+            </template>
+          </va-data-table>
         </div>
       </va-card-content>
     </va-card>
-
-    <div class="row">
+    <!-- <div class="row">
       <div class="flex md6 xs12">
         <va-card v-if="supervisionsDataGenerated" class="chart-widget">
           <va-card-title>Supervisions</va-card-title>
@@ -91,184 +52,88 @@
           </va-card-content>
         </va-card>
       </div>
-    </div>
-
-    <va-card>
-      <va-card-title>Devices</va-card-title>
-      <va-card-content>
-        <div class="table-wrapper">
-          <table class="va-table va-table--striped va-table--hoverable">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="device in devices" :key="device.id">
-                <td>{{ device.id }}</td>
-                <td>{{ device.name }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </va-card-content>
-    </va-card>
+    </div> -->
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref, watch, computed } from 'vue'
-  import { useChartData } from '@/data/charts/composables/useChartData'
-  import VaChart from '@/components/va-charts/VaChart.vue'
+  // import VaChart from '@/components/va-charts/VaChart.vue'
+  import { ref, computed } from 'vue'
+  // import { useChartData } from '@/data/charts/composables/useChartData'
   import { useQuery } from '@vue/apollo-composable'
   import gql from 'graphql-tag'
+  import DeviceData from '@/models/device-data'
 
-  const { result } = useQuery(gql`
-    query getDevices {
-      devices {
-        id
-        name
+  const { result } = useQuery(
+    gql`
+      query getDevicesData {
+        devicesData {
+          mac
+          latestTimestamp
+          type
+          sensorReadings {
+            units
+            value
+          }
+          buttonPressCounts
+          lifetimeTxCount
+          firmwareVersion
+          hardwareVersion
+          lastConnectorMac
+        }
       }
-    }
-  `)
+    `,
+    null,
+    {
+      fetchPolicy: 'cache-and-network',
+    },
+  )
 
-  const devices = computed(() => result?.value?.devices || [])
-
-  // tables demo
-  const activeDevicesData = [
-    {
-      id: 1,
-      hostname: 'device-1',
-      mac: '00:00:00:00:00:01',
-      nodeId: '1',
-      interface: 'wlan0',
-      address: '192.168.101.10',
-      ssid: 'ssid-1',
-      signal: '-80',
-      age: '1d',
-      uptime: '1d',
-    },
-    {
-      id: 2,
-      hostname: 'device-2',
-      mac: '00:00:00:00:00:02',
-      nodeId: '2',
-      interface: 'wlan0',
-      address: '192.168.101.11',
-      ssid: 'ssid-2',
-      signal: '-80',
-      age: '1d',
-      uptime: '1d',
-    },
-    {
-      id: 3,
-      hostname: 'device-3',
-      mac: '00:00:00:00:00:03',
-      nodeId: '3',
-      interface: 'wlan0',
-      address: '192.168.101.12',
-      ssid: 'ssid-3',
-      signal: '-80',
-      age: '1d',
-      uptime: '1d',
-    },
-    {
-      id: 4,
-      hostname: 'device-4',
-      mac: '00:00:00:00:00:04',
-      nodeId: '4',
-      interface: 'wlan0',
-      address: '192.168.101.13',
-      ssid: 'ssid-4',
-      signal: '-80',
-      age: '1d',
-      uptime: '1d',
-    },
-    {
-      id: 5,
-      hostname: 'device-5',
-      mac: '00:00:00:00:00:05',
-      nodeId: '5',
-      interface: 'wlan0',
-      address: '192.168.101.14',
-      ssid: 'ssid-5',
-      signal: '-80',
-      age: '1d',
-      uptime: '1d',
-    },
+  const devicesData = computed(() => result?.value?.devicesData.map((d: DeviceData) => new DeviceData(d)) || [])
+  const columns = [
+    { key: 'mac', label: 'MAC', sortable: true },
+    { key: 'type', label: 'Type', sortable: true },
+    { key: 'voltage', label: 'voltage', sortable: true },
+    { key: 'otherReadings', label: 'Other Sensor Readings', sortable: true },
+    { key: 'latestTimestamp', label: 'Latest Timestamp', sortable: true },
+    { key: 'buttonPressCounts', label: 'Button Press Counts', sortable: true },
+    { key: 'lastConnectorMac', label: 'Last Connector Mac', sortable: true },
+    { key: 'lifetimeTxCount', label: 'Lifetime Tx Count', sortable: true },
+    { key: 'firmwareVersion', label: 'Firmware Version', sortable: true },
+    { key: 'hardwareVersion', label: 'Hardware Version', sortable: true },
   ]
-  const inactiveDevicesData = [
-    {
-      id: 6,
-      hostname: 'device-6',
-      mac: '00:00:00:00:00:06',
-      nodeId: '6',
-      interface: 'n/a',
-      address: '192.168.101.15',
-      ssid: 'ssid-6',
-      signal: '-80',
-      age: '1d',
-      uptime: '1d',
-    },
-    {
-      id: 7,
-      hostname: 'device-7',
-      mac: '00:00:00:00:00:07',
-      nodeId: '7',
-      interface: 'wlan0',
-      address: '192.168.101.16',
-      ssid: 'ssid-7',
-      signal: '-80',
-      age: '1d',
-      uptime: '1d',
-    },
-    {
-      id: 8,
-      hostname: 'device-8',
-      mac: '00:00:00:00:00:08',
-      nodeId: '8',
-      interface: 'wlan0',
-      address: '192.168.101.17',
-      ssid: 'ssid-8',
-      signal: '-80',
-      age: '1d',
-      uptime: '1d',
-    },
-  ]
-  const activeDevices = ref(activeDevicesData)
-  const inactiveDevices = ref(inactiveDevicesData)
+  const filter = ref()
 
-  // charts demo
-  const supervisionsData = {
-    labels: [
-      'TX_TYPE_SUPERVISION',
-      'SW_SUPERVISION_MISSED',
-      'TX_TYPE_LOW_BATTERY',
-      'TX_TYPE_LOW_BATTERY',
-      'TX_TYPE_DRY_CONTACT_OPEN_1',
-      'TX_TYPE_DRY_CONTACT_CLOSE_1',
-    ],
-    datasets: [
-      {
-        label: 'Types of Alarms',
-        backgroundColor: ['primary', 'info', 'danger', 'success', 'warning', '#000000'],
-        data: [144372, 6238, 4294, 21400, 19000, 12000],
-      },
-    ],
-  }
-  const alarmsData = {
-    labels: ['Created', 'Opened', 'Closed', 'Conditions Cleared', 'Accepted', 'Disposition Added', 'Declined'],
-    datasets: [
-      {
-        label: 'Events',
-        backgroundColor: ['danger', 'info', 'primary', 'success', 'warning'],
-        data: [1430, 1430, 1427, 991, 187, 14, 3],
-      },
-    ],
-  }
-  const supervisionsDataGenerated = useChartData(supervisionsData)
-  const alarmsDataGenerated = useChartData(alarmsData)
+  /******************CHARTS DEMO*********************** */
+  // const supervisionsData = {
+  //   labels: [
+  //     'TX_TYPE_SUPERVISION',
+  //     'SW_SUPERVISION_MISSED',
+  //     'TX_TYPE_LOW_BATTERY',
+  //     'TX_TYPE_LOW_BATTERY',
+  //     'TX_TYPE_DRY_CONTACT_OPEN_1',
+  //     'TX_TYPE_DRY_CONTACT_CLOSE_1',
+  //   ],
+  //   datasets: [
+  //     {
+  //       label: 'Types of Alarms',
+  //       backgroundColor: ['primary', 'info', 'danger', 'success', 'warning', '#000000'],
+  //       data: [144372, 6238, 4294, 21400, 19000, 12000],
+  //     },
+  //   ],
+  // }
+  // const alarmsData = {
+  //   labels: ['Created', 'Opened', 'Closed', 'Conditions Cleared', 'Accepted', 'Disposition Added', 'Declined'],
+  //   datasets: [
+  //     {
+  //       label: 'Events',
+  //       backgroundColor: ['danger', 'info', 'primary', 'success', 'warning'],
+  //       data: [1430, 1430, 1427, 991, 187, 14, 3],
+  //     },
+  //   ],
+  // }
+  // const supervisionsDataGenerated = useChartData(supervisionsData)
+  // const alarmsDataGenerated = useChartData(alarmsData)
 </script>
 
 <style lang="scss">

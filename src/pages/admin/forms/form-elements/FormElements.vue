@@ -262,8 +262,8 @@
   const withIcon = ref('')
   const withButton = ref('')
   const withDescription = ref('')
-  const clearableText = ref('Vasili Savitski')
-  const successfulEmail = ref('andrei@dreamsupport.io')
+  const clearableText = ref('Gibran Amparan')
+  const successfulEmail = ref('gibran.amparan@sentrics.net')
   const wrongEmail = ref('andrei@dreamsupport')
   const messages = ref([
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor ' +
