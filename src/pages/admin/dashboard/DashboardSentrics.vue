@@ -7,26 +7,20 @@
           <va-input v-model="filter" class="flex mb-2 md6" placeholder="Filter..." />
         </div>
         <div class="table-wrapper">
-          <va-data-table :items="devicesData" :columns="columns" :filter="filter" items-track-by="mac" stripped>
+          <va-data-table
+            :items="devicesData"
+            :columns="columns"
+            :filter="filter"
+            items-track-by="mac"
+            hoverable
+            striped
+          >
             <template #cell(voltage)="{ source }">
-              <span>{{ source.toFixed(3) }} V</span>
+              <span>{{ source.toFixed(3) }} {{ SensorReading.unitsToStandarUnits(Units.volts) }}</span>
             </template>
-            <!-- <template #cell(voltage)="{source, rowData}">
-              <va-popover placement="right">
-                <span>{{ source.toFixed(3) }} V</span>
-                <template #title>
-                  Other Readings
-                </template>
-                <template #body>
-                  <template v-for="sr in rowData.otherReadings">
-                    <span>{{sr.value.toFixed(3)}}</span> <b>{{sr.units}}</b><br>
-                  </template>
-                </template>
-              </va-popover>
-            </template> -->
             <template #cell(otherReadings)="{ source }">
               <template v-for="(sr, idx) in source" :key="idx">
-                <span>{{ sr.value.toFixed(3) }}</span> <b>{{ sr.units }}</b
+                <span>{{ sr.value.toFixed(3) }}</span> <b>{{ sr.standarUnits }}</b
                 ><br />
               </template>
             </template>
@@ -61,35 +55,24 @@
   import { ref, computed } from 'vue'
   // import { useChartData } from '@/data/charts/composables/useChartData'
   import { useQuery } from '@vue/apollo-composable'
-  import gql from 'graphql-tag'
-  import DeviceData from '@/models/device-data'
+  import DeviceData, { Units, SensorReading } from '@/models/device-data'
+  import { GET_DEVICES_DATA } from '@/graphql/queries/device-data'
 
-  const { result } = useQuery(
-    gql`
-      query getDevicesData {
-        devicesData {
-          mac
-          latestTimestamp
-          type
-          sensorReadings {
-            units
-            value
-          }
-          buttonPressCounts
-          lifetimeTxCount
-          firmwareVersion
-          hardwareVersion
-          lastConnectorMac
-        }
+  const { result } = useQuery(GET_DEVICES_DATA, null, {
+    fetchPolicy: 'cache-and-network',
+  })
+
+  const devicesData = computed(() => {
+    const res: Array<DeviceData> = result?.value?.devicesData.map((d: DeviceData) => new DeviceData(d)) || []
+    // Test code just to add some voltage readings.
+    res.forEach((dd: DeviceData) => {
+      // In case there are no voltage readings, we add one
+      if (!dd.sensorReadings.find((sr) => sr.units === Units.volts)) {
+        dd.sensorReadings.push(new SensorReading(Units.volts, Math.random() * 5))
       }
-    `,
-    null,
-    {
-      fetchPolicy: 'cache-and-network',
-    },
-  )
-
-  const devicesData = computed(() => result?.value?.devicesData.map((d: DeviceData) => new DeviceData(d)) || [])
+    })
+    return res
+  })
   const columns = [
     { key: 'mac', label: 'MAC', sortable: true },
     { key: 'type', label: 'Type', sortable: true },
@@ -137,18 +120,18 @@
 </script>
 
 <style lang="scss">
-  .markup-tables {
-    .table-wrapper {
-      overflow: auto;
-    }
+  // .markup-tables {
+  //   .table-wrapper {
+  //     overflow: auto;
+  //   }
 
-    .va-table {
-      width: 100%;
-    }
-  }
-  .chart-widget {
-    .va-card__content {
-      height: 450px;
-    }
-  }
+  //   .va-table {
+  //     width: 100%;
+  //   }
+  // }
+  // .chart-widget {
+  //   .va-card__content {
+  //     height: 450px;
+  //   }
+  // }
 </style>

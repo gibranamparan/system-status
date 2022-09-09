@@ -1,4 +1,4 @@
-enum Units {
+export enum Units {
   volts = 'volts',
   kelvin = 'kelvin',
   hPa = 'hPa',
@@ -8,16 +8,20 @@ enum Units {
   gauss = 'gauss',
   adc12bit = 'adc12bit',
 }
-class SensorReading {
-  _units: Units
+export class SensorReading {
+  units: Units
   value: number
 
   constructor(units: string, value: number) {
-    this._units = units as Units
+    this.units = units as Units
     this.value = value
   }
 
-  get units(): string {
+  get standarUnits(): string {
+    return SensorReading.unitsToStandarUnits(this.units) || this.units
+  }
+
+  static unitsToStandarUnits(unit: Units) {
     const unitsMap = new Map()
     unitsMap.set(Units.volts, 'V')
     unitsMap.set(Units.kelvin, 'K')
@@ -27,7 +31,7 @@ class SensorReading {
     unitsMap.set(Units.g, 'g')
     unitsMap.set(Units.gauss, 'G')
     unitsMap.set(Units.adc12bit, 'adc12bit')
-    return unitsMap.get(this._units) || this._units
+    return unitsMap.get(unit)
   }
   toString() {
     return `${this.value} ${this.units}`
@@ -61,13 +65,11 @@ export default class DeviceData {
   }
 
   get voltage(): number {
-    const sr = this.sensorReadings.find((sr) => sr._units === Units.volts)
+    const sr = this.sensorReadings.find((sr) => sr.units === Units.volts)
     return sr?.value || 0
   }
 
   get otherReadings(): SensorReading[] {
-    return this.sensorReadings
-      .filter((sr) => sr._units !== Units.volts)
-      .sort((a, b) => a._units.localeCompare(b._units))
+    return this.sensorReadings.filter((sr) => sr.units !== Units.volts).sort((a, b) => a.units.localeCompare(b.units))
   }
 }
