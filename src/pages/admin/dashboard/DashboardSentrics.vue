@@ -16,11 +16,11 @@
             striped
           >
             <template #cell(voltage)="{ source }">
-              <span>{{ source.toFixed(3) }} {{ SensorReading.unitsToStandarUnits(Units.volts) }}</span>
+              <span>{{ source.toFixed(3) }} {{ SensorReading.unitsToStandardUnits(Units.volts) }}</span>
             </template>
             <template #cell(otherReadings)="{ source }">
-              <template v-for="(sr, idx) in source" :key="idx">
-                <span>{{ sr.value.toFixed(3) }}</span> <b>{{ sr.standarUnits }}</b
+              <template v-for="(sr, idx) in (source as SensorReading[])" :key="idx">
+                <span>{{ sr.value.toFixed(3) }}</span> <b>{{ sr.standardUnits }}</b
                 ><br />
               </template>
             </template>

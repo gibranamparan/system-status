@@ -9,19 +9,13 @@ export enum Units {
   adc12bit = 'adc12bit',
 }
 export default class SensorReading {
-  units: Units
-  value: number
+  constructor(public units: Units, public value: number) {}
 
-  constructor(units: string, value: number) {
-    this.units = units as Units
-    this.value = value
+  get standardUnits(): string {
+    return SensorReading.unitsToStandardUnits(this.units) || this.units
   }
 
-  get standarUnits(): string {
-    return SensorReading.unitsToStandarUnits(this.units) || this.units
-  }
-
-  static unitsToStandarUnits(unit: Units) {
+  static unitsToStandardUnits(unit: Units): string {
     const unitsMap = new Map()
     unitsMap.set(Units.volts, 'V')
     unitsMap.set(Units.kelvin, 'K')
