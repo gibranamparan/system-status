@@ -28,44 +28,24 @@
         </div>
       </va-card-content>
     </va-card>
-    <!-- <div class="row">
-      <div class="flex md6 xs12">
-        <va-card v-if="supervisionsDataGenerated" class="chart-widget">
-          <va-card-title>Supervisions</va-card-title>
-          <va-card-content>
-            <va-chart :data="supervisionsDataGenerated" type="pie" />
-          </va-card-content>
-        </va-card>
-      </div>
-
-      <div class="flex md6 xs12">
-        <va-card v-if="alarmsDataGenerated" class="chart-widget">
-          <va-card-title>Alarm Events</va-card-title>
-          <va-card-content>
-            <va-chart :data="alarmsDataGenerated" type="doughnut" />
-          </va-card-content>
-        </va-card>
-      </div>
-    </div> -->
   </div>
 </template>
 
 <script setup lang="ts">
-  // import VaChart from '@/components/va-charts/VaChart.vue'
   import { ref, computed } from 'vue'
-  // import { useChartData } from '@/data/charts/composables/useChartData'
   import { useQuery } from '@vue/apollo-composable'
-  import DeviceData, { Units, SensorReading } from '@/models/device-data'
+  import SensorReading, { Units } from '@/models/sensor-reading'
+  import DeviceData, { DevicesDataResults } from '@/models/device-data'
   import { GET_DEVICES_DATA } from '@/graphql/queries/device-data'
 
-  const { result } = useQuery(GET_DEVICES_DATA, null, {
+  const { result } = useQuery<DevicesDataResults>(GET_DEVICES_DATA, null, {
     fetchPolicy: 'cache-and-network',
   })
 
   const devicesData = computed(() => {
-    const res: Array<DeviceData> = result?.value?.devicesData.map((d: DeviceData) => new DeviceData(d)) || []
-    // Test code just to add some voltage readings.
-    res.forEach((dd: DeviceData) => {
+    const res: Array<DeviceData> = result?.value?.devicesData.map((d) => new DeviceData(d)) || []
+    // Generate test data adding some voltage readings.
+    res.forEach((dd) => {
       // In case there are no voltage readings, we add one
       if (!dd.sensorReadings.find((sr) => sr.units === Units.volts)) {
         dd.sensorReadings.push(new SensorReading(Units.volts, Math.random() * 5))
@@ -85,53 +65,5 @@
     { key: 'firmwareVersion', label: 'Firmware Version', sortable: true },
     { key: 'hardwareVersion', label: 'Hardware Version', sortable: true },
   ]
-  const filter = ref()
-
-  /******************CHARTS DEMO*********************** */
-  // const supervisionsData = {
-  //   labels: [
-  //     'TX_TYPE_SUPERVISION',
-  //     'SW_SUPERVISION_MISSED',
-  //     'TX_TYPE_LOW_BATTERY',
-  //     'TX_TYPE_LOW_BATTERY',
-  //     'TX_TYPE_DRY_CONTACT_OPEN_1',
-  //     'TX_TYPE_DRY_CONTACT_CLOSE_1',
-  //   ],
-  //   datasets: [
-  //     {
-  //       label: 'Types of Alarms',
-  //       backgroundColor: ['primary', 'info', 'danger', 'success', 'warning', '#000000'],
-  //       data: [144372, 6238, 4294, 21400, 19000, 12000],
-  //     },
-  //   ],
-  // }
-  // const alarmsData = {
-  //   labels: ['Created', 'Opened', 'Closed', 'Conditions Cleared', 'Accepted', 'Disposition Added', 'Declined'],
-  //   datasets: [
-  //     {
-  //       label: 'Events',
-  //       backgroundColor: ['danger', 'info', 'primary', 'success', 'warning'],
-  //       data: [1430, 1430, 1427, 991, 187, 14, 3],
-  //     },
-  //   ],
-  // }
-  // const supervisionsDataGenerated = useChartData(supervisionsData)
-  // const alarmsDataGenerated = useChartData(alarmsData)
+  const filter = ref('')
 </script>
-
-<style lang="scss">
-  // .markup-tables {
-  //   .table-wrapper {
-  //     overflow: auto;
-  //   }
-
-  //   .va-table {
-  //     width: 100%;
-  //   }
-  // }
-  // .chart-widget {
-  //   .va-card__content {
-  //     height: 450px;
-  //   }
-  // }
-</style>
