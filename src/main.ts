@@ -15,7 +15,7 @@ const httpLink = createHttpLink({
   // You should use an absolute URL here
   // uri: 'http://192.168.100.66:5000/graphql', // directly to the GraphQL API
   // uri: 'http://192.168.100.77:1234/192.168.100.77:5000/graphql', // cors-proxy to the GraphQL API
-  uri: 'http://localhost:4008/graphql', // cors-proxy to the GraphQL API
+  uri: 'http://localhost:4008/graphql', // mock server
 })
 
 // Cache implementation
