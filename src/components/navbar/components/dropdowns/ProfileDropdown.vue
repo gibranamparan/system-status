@@ -8,9 +8,12 @@
     </template>
     <va-dropdown-content class="profile-dropdown__content">
       <va-list-item v-for="option in options" :key="option.name" class="pa-2">
-        <router-link :to="{ name: option.redirectTo }" class="profile-dropdown__item">
+        <!-- <router-link :to="{ name: option.redirectTo }" class="profile-dropdown__item">
           {{ t(`user.${option.name}`) }}
-        </router-link>
+        </router-link> -->
+        <div class="profile-dropdown__item" @click="logout">
+          {{ t(`user.${option.name}`) }}
+        </div>
       </va-list-item>
     </va-dropdown-content>
   </va-dropdown>
@@ -20,6 +23,10 @@
   import { computed, ref } from 'vue'
   import { useI18n } from 'vue-i18n'
   import { useGlobalConfig } from 'vuestic-ui'
+  import { useCookies } from '@vueuse/integrations/useCookies'
+  import { useRouter } from 'vue-router'
+  const { remove: removeCookie } = useCookies()
+  const router = useRouter()
 
   const { t } = useI18n()
 
@@ -29,10 +36,10 @@
     }>(),
     {
       options: () => [
-        {
-          name: 'profile',
-          redirectTo: '',
-        },
+        // {
+        //   name: 'profile',
+        //   redirectTo: '',
+        // },
         {
           name: 'logout',
           redirectTo: 'login',
@@ -42,8 +49,12 @@
   )
 
   const isShown = ref(false)
-
   const theme = computed(() => useGlobalConfig().getGlobalConfig().colors!)
+
+  const logout = () => {
+    removeCookie('access_token')
+    router.push({ name: 'login' })
+  }
 </script>
 
 <style lang="scss" scoped>
