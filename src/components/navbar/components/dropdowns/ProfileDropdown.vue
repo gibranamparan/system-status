@@ -20,12 +20,13 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, ref } from 'vue'
+  import { computed, ref, inject } from 'vue'
   import { useI18n } from 'vue-i18n'
   import { useGlobalConfig } from 'vuestic-ui'
-  import { useCookies } from '@vueuse/integrations/useCookies'
   import { useRouter } from 'vue-router'
-  const { remove: removeCookie } = useCookies()
+  import AuthService from '@/services/auth-service'
+
+  const authService = inject<AuthService>('auth-service')
   const router = useRouter()
 
   const { t } = useI18n()
@@ -52,7 +53,7 @@
   const theme = computed(() => useGlobalConfig().getGlobalConfig().colors!)
 
   const logout = () => {
-    removeCookie('access_token')
+    authService?.logout()
     router.push({ name: 'login' })
   }
 </script>

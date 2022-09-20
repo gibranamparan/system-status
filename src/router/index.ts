@@ -222,38 +222,4 @@ const router = createRouter({
   routes,
 })
 
-// init call to check token
-import { useAxios } from '@vueuse/integrations/useAxios'
-const auth_server_base = 'http://192.168.100.77:1234/192.168.100.77:8081/realms/sentrics'
-const { execute: getCheckToken } = useAxios(
-  `${auth_server_base}/protocol/openid-connect/userinfo`,
-  { method: 'GET' },
-  { immediate: false },
-)
-
-import { useCookies } from '@vueuse/integrations/useCookies'
-const { get: getCookie, remove: removeCookie } = useCookies()
-
-router.beforeEach(async (to, from, next) => {
-  let isAuthenticated = false
-  const token = getCookie<string>('access_token')
-
-  if (token) {
-    // Check if token is valid
-    const res = await getCheckToken({ headers: { Authorization: `Bearer ${token}` } })
-    if (res.response.value?.status === 200 && !res.error.value) {
-      isAuthenticated = true
-    } else if (res.error.value?.response?.status === 401) {
-      // Token is invalid, remove token
-      removeCookie('access_token')
-    }
-  }
-
-  if (!isAuthenticated && to.name !== 'login') {
-    next({ name: 'login' })
-  } else {
-    next()
-  }
-})
-
 export default router

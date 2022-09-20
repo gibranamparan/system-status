@@ -5,45 +5,58 @@ import i18n from './i18n'
 import { createVuestic } from 'vuestic-ui'
 import vuesticGlobalConfig from './services/vuestic-ui/global-config'
 import { createGtm } from '@gtm-support/vue-gtm'
+import { DefaultApolloClient } from '@vue/apollo-composable'
+import axios from 'axios'
 import App from './App.vue'
 
-// Apollo client setup
+// *** Apollo client setup
 import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client/core'
-
 // const graphQLServer = 'http://192.168.100.77:1234/192.168.100.77:5000/graphql' // cors-proxy to the GraphQL API
-// const graphQLServer = 'http://192.168.100.66:5000/graphql' // directly to the GraphQL API
 const graphQLServer = 'http://localhost:4008/graphql' // mock server
 
 // HTTP connection to the API
-const httpLink = createHttpLink({
-  // You should use an absolute URL here
-  uri: graphQLServer,
-})
-
-// Cache implementation
 const cache = new InMemoryCache()
-
-// Create the apollo client
 const apolloClient = new ApolloClient({
-  link: httpLink,
+  link: createHttpLink({
+    // You should use an absolute URL here
+    uri: graphQLServer,
+  }),
   cache,
 })
 
-// Mount App
-import { DefaultApolloClient } from '@vue/apollo-composable'
-
+// *** Mount App
 const app = createApp({
   setup() {
     provide(DefaultApolloClient, apolloClient)
   },
-
   render: () => h(App),
 })
 
-app.use(stores)
-app.use(router)
-app.use(i18n)
-app.use(createVuestic({ config: vuesticGlobalConfig }))
+// *** Init axios client to auth server
+import AuthService from './services/auth-service'
+const axiosAuthInstance = axios.create({
+  baseURL: 'http://192.168.100.77:1234/192.168.100.77:8081/realms/sentrics',
+})
+const authService = new AuthService(axiosAuthInstance)
+
+// *** Init router with navigation Guard: Check if user is logged in and token is still valid, redirect to login page if not
+router.beforeEach(async (to, from, next) => {
+  let isAuthenticated = false
+
+  // If there is no user info, token is invalid
+  const userInfo = await authService.getUserInfo()
+  if (userInfo) {
+    isAuthenticated = true
+  } else {
+    authService.logout()
+  }
+
+  if (!isAuthenticated && to.name !== 'login') {
+    next({ name: 'login' })
+  } else {
+    next()
+  }
+})
 
 if (import.meta.env.VITE_APP_GTM_ENABLED) {
   app.use(
@@ -55,4 +68,9 @@ if (import.meta.env.VITE_APP_GTM_ENABLED) {
   )
 }
 
+app.provide('auth-service', authService)
+app.use(stores)
+app.use(i18n)
+app.use(createVuestic({ config: vuesticGlobalConfig }))
+app.use(router)
 app.mount('#app')
