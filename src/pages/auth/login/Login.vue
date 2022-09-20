@@ -39,6 +39,7 @@
   import { useCookies } from '@vueuse/integrations/useCookies'
   import { useI18n } from 'vue-i18n'
   import { useGlobalStore } from '@/stores/global-store'
+
   const GlobalStore = useGlobalStore()
   const { t } = useI18n()
   const router = useRouter()
@@ -90,7 +91,7 @@
         //set user cookies
         const expiresIn = res.response.value?.data.expires_in
         const newToken = res.response.value?.data.access_token
-        setUserCookies('access_token', newToken, { expiresIn })
+        setUserCookies('access_token', newToken, { expires: expiresIn })
 
         // get user info from auth server and store it in global store
         const userInfoResponse = await getCheckToken({ headers: { Authorization: `Bearer ${newToken}` } })
