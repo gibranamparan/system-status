@@ -22,17 +22,20 @@
   </div>
 </template>
 
-<script setup>
-  import { computed } from 'vue'
+<script setup lang="ts">
+  import { computed, inject, ref } from 'vue'
   import { storeToRefs } from 'pinia'
   import { useGlobalStore } from '../../stores/global-store'
   import { useColors } from 'vuestic-ui'
   import VaIconMenuCollapsed from '../icons/VaIconMenuCollapsed.vue'
   import AppNavbarActions from './components/AppNavbarActions.vue'
+  import AuthService from '@/services/auth-service'
+
+  const authService = inject<AuthService>('auth-service')
+  const userName = ref(authService?.userFullName || '')
 
   const GlobalStore = useGlobalStore()
-
-  const { isSidebarMinimized, userName } = storeToRefs(GlobalStore)
+  const { isSidebarMinimized } = storeToRefs(GlobalStore)
 
   const { getColors } = useColors()
   const colors = computed(() => getColors())

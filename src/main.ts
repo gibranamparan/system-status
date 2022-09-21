@@ -9,17 +9,18 @@ import { DefaultApolloClient } from '@vue/apollo-composable'
 import axios from 'axios'
 import App from './App.vue'
 
+const KEYCLOAK_URL = import.meta.env.VITE_KEYCLOAK_URL
+const GRAPHQL_URL = import.meta.env.VITE_GRAPHQL_URL
+
 // *** Apollo client setup
 import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client/core'
-// const graphQLServer = 'http://192.168.100.77:1234/192.168.100.77:5000/graphql' // cors-proxy to the GraphQL API
-const graphQLServer = 'http://localhost:4008/graphql' // mock server
 
 // HTTP connection to the API
 const cache = new InMemoryCache()
 const apolloClient = new ApolloClient({
   link: createHttpLink({
     // You should use an absolute URL here
-    uri: graphQLServer,
+    uri: GRAPHQL_URL,
   }),
   cache,
 })
@@ -35,7 +36,7 @@ const app = createApp({
 // *** Init axios client to auth server
 import AuthService from './services/auth-service'
 const axiosAuthInstance = axios.create({
-  baseURL: 'http://192.168.100.77:1234/192.168.100.77:8081/realms/sentrics',
+  baseURL: `${KEYCLOAK_URL}/realms/sentrics`,
 })
 const authService = new AuthService(axiosAuthInstance)
 

@@ -3,10 +3,9 @@
     <va-input
       v-model="email"
       class="mb-3"
-      type="email"
-      :label="t('auth.email')"
-      :error="!!emailErrors.length"
-      :error-messages="emailErrors"
+      label="Username"
+      :error="!!usernameErrors.length"
+      :error-messages="usernameErrors"
       @keydown="showLoginError = false"
     />
 
@@ -39,27 +38,25 @@
   import { useGlobalStore } from '@/stores/global-store'
   import AuthService from '@/services/auth-service'
 
-  const GlobalStore = useGlobalStore()
   const { t } = useI18n()
   const router = useRouter()
   const authService = inject<AuthService>('auth-service')
 
   // const keepLoggedIn = ref(false)
-  const email = ref('testone')
-  const password = ref('password')
-  const emailErrors = ref<string[]>([])
+  const email = ref('')
+  const password = ref('')
+  const usernameErrors = ref<string[]>([])
   const passwordErrors = ref<string[]>([])
   const showLoginError = ref(false)
   const errorLoginMessage = ref('')
 
-  const formReady = computed(() => !emailErrors.value.length && !passwordErrors.value.length)
+  const formReady = computed(() => !usernameErrors.value.length && !passwordErrors.value.length)
 
   async function onsubmit() {
-    if (!formReady.value) return
-
-    emailErrors.value = email.value ? [] : ['Email is required']
+    usernameErrors.value = email.value ? [] : ['Username is required']
     passwordErrors.value = password.value ? [] : ['Password is required']
 
+    if (!formReady.value) return
     // If form is ready, send request to server
     if (email.value && password.value && authService) {
       const errorMsg = 'Something went wrong. Please try again, if persists, contact technical support.'
@@ -69,9 +66,6 @@
         // Authenticatation was successful
         showLoginError.value = false
         errorLoginMessage.value = ''
-
-        const userInfo = await authService.getUserInfo()
-        if (userInfo) GlobalStore.changeUserName(userInfo.name)
 
         //redirect to main page
         router.push({ name: 'devices' })

@@ -1,8 +1,8 @@
+import jwt_decode from 'jwt-decode'
 import { AxiosInstance } from 'axios'
 import { useAxios } from '@vueuse/integrations/useAxios'
 import { useCookies } from '@vueuse/integrations/useCookies'
-import { AuthResponse, UserInfo } from '@/models/auth'
-import jwt_decode from 'jwt-decode'
+import { AuthResponse, DecodedToken, UserInfo } from '@/models/auth'
 const { set: setUserCookies, get: getCookie, remove: removeCookie } = useCookies()
 
 export default class AuthService {
@@ -10,6 +10,20 @@ export default class AuthService {
 
   constructor(client: AxiosInstance) {
     this.client = client
+  }
+
+  get userName() {
+    const token = getCookie<string>('access_token')
+    if (!token) return null
+    const decodedToken = jwt_decode<DecodedToken>(token)
+    return decodedToken.preferred_username
+  }
+
+  get userFullName() {
+    const token = getCookie<string>('access_token')
+    if (!token) return null
+    const decodedToken = jwt_decode<DecodedToken>(token)
+    return decodedToken.name
   }
 
   public async login(username: string, password: string): Promise<AuthResponse> {
@@ -30,9 +44,8 @@ export default class AuthService {
       const newToken = res?.response.value?.data.access_token
 
       // get resource access to check if user is allowed to access the dashboard
-      const decodedToken = jwt_decode<any | undefined>(newToken)
-      console.log(decodedToken)
-      const hasAccessToClient = !!decodedToken?.resource_access['system-dashboard']
+      const decodedToken = jwt_decode<DecodedToken>(newToken)
+      const hasAccessToClient = !!decodedToken.resource_access['system-dashboard']
 
       // User is authenticated but dont have access to dashboard
       if (!hasAccessToClient) {

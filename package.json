@@ -9,7 +9,8 @@
     "build:ci": "vite build",
     "prelint": "npm run format",
     "lint": "eslint --fix './src/**/*.{ts,js,vue}'",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "preview": "vite preview --port 4173"
   },
   "lint-staged": {
     "./src/**/*.{ts,js,vue}": [
