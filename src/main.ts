@@ -9,9 +9,6 @@ import { DefaultApolloClient } from '@vue/apollo-composable'
 import axios from 'axios'
 import App from './App.vue'
 
-const KEYCLOAK_URL = import.meta.env.VITE_KEYCLOAK_URL
-const GRAPHQL_URL = import.meta.env.VITE_GRAPHQL_URL
-
 // *** Apollo client setup
 import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client/core'
 
@@ -20,7 +17,7 @@ const cache = new InMemoryCache()
 const apolloClient = new ApolloClient({
   link: createHttpLink({
     // You should use an absolute URL here
-    uri: GRAPHQL_URL,
+    uri: '/graphql',
   }),
   cache,
 })
@@ -36,7 +33,8 @@ const app = createApp({
 // *** Init axios client to auth server
 import AuthService from './services/auth-service'
 const axiosAuthInstance = axios.create({
-  baseURL: `${KEYCLOAK_URL}/realms/sentrics`,
+  // baseURL: `${KEYCLOAK_URL}/realms/sentrics`, // new keycloak
+  baseURL: `/auth/realms/silversphere`, // old keycloak
 })
 const authService = new AuthService(axiosAuthInstance)
 

@@ -1,20 +1,28 @@
 import { gql } from 'graphql-tag'
 
 const DEVICE_DATA = gql`
-  fragment deviceData on DeviceData {
+  fragment device on Device {
+    id
+    name
     mac
-    latestTimestamp
-    type
-    sensorReadings {
-      units
-      value
+    type: flavor
+    sensorValues: sensors {
+      voltage
+      temperature
+      humidity
+      pressure
+      luminosity
+      updatedAt
     }
-    buttonPressCounts
-    lifetimeTxCount
-    firmwareVersion
-    hardwareVersion
-    lastConnectorMac
   }
 `
+
+// ** Pending to ADD
+// latestTimestamp
+// buttonPressCounts
+// lifetimeTxCount
+// firmwareVersion
+// hardwareVersion
+// lastConnectorMac
 
 export { DEVICE_DATA }

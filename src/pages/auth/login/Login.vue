@@ -26,7 +26,7 @@
     <div v-if="showLoginError" style="color: var(--va-danger)">{{ errorLoginMessage }}</div>
 
     <div class="d-flex justify--center mt-3">
-      <va-button class="my-0" @click="onsubmit">{{ t('auth.login') }}</va-button>
+      <va-button class="my-0" :loading="isLogingIn" @click="onsubmit">{{ t('auth.login') }}</va-button>
     </div>
   </form>
 </template>
@@ -49,6 +49,7 @@
   const passwordErrors = ref<string[]>([])
   const showLoginError = ref(false)
   const errorLoginMessage = ref('')
+  const isLogingIn = ref(false)
 
   const formReady = computed(() => !usernameErrors.value.length && !passwordErrors.value.length)
 
@@ -60,7 +61,11 @@
     // If form is ready, send request to server
     if (email.value && password.value && authService) {
       const errorMsg = 'Something went wrong. Please try again, if persists, contact technical support.'
-      const res = await authService.login(email.value, password.value)
+
+      isLogingIn.value = true
+      const res = await authService.login(email.value, password.value).finally(() => {
+        isLogingIn.value = false
+      })
 
       if (res.token) {
         // Authenticatation was successful

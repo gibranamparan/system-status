@@ -1,32 +1,32 @@
-import SensorReading, { Units } from './sensor-reading'
-
+import Sensors, { SensorReading, SensorsValues, Units } from './sensors'
 export interface DevicesDataResults {
-  devicesData: DeviceData[]
+  devices: DeviceData[]
 }
 export default class DeviceData {
+  private sensorValues: SensorsValues | null = null
   constructor(
     obj?: DeviceData,
-    public mac: string = '',
-    public type: string = '',
-    public latestTimestamp: Date = new Date(),
-    public sensorReadings: SensorReading[] = [],
+    public id: string | null = null,
+    public name: string | null = null,
+    public mac: string | null = null,
+    public type: string | null = null,
+    public sensorsReadings: Sensors | null = null,
     public buttonPressCounts: number[] = [],
     public lifetimeTxCount: number = 0,
-    public firmwareVersion: string = '',
-    public hardwareVersion: string = '',
-    public lastConnectorMac: string = '',
+    public firmwareVersion: string | null = null,
+    public hardwareVersion: string | null = null,
+    public lastConnectorMac: string | null = null,
   ) {
     if (!obj) return
     Object.assign(this, obj)
-    this.sensorReadings = obj.sensorReadings.map((sr: SensorReading) => new SensorReading(sr.units, sr.value))
+    this.sensorsReadings = obj.sensorValues ? new Sensors(obj.sensorValues) : null
   }
 
-  get voltage(): number {
-    const sr = this.sensorReadings.find((sr) => sr.units === Units.volts)
-    return sr?.value || 0
+  get voltage(): SensorReading | null {
+    return this.sensorsReadings?.voltage ?? null
   }
 
-  get otherReadings(): SensorReading[] {
-    return this.sensorReadings.filter((sr) => sr.units !== Units.volts).sort((a, b) => a.units.localeCompare(b.units))
+  get latestTimestamp(): string {
+    return this.sensorsReadings?.updatedAtString ?? 'n/a'
   }
 }
