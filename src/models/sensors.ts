@@ -1,12 +1,13 @@
 export enum Units {
-  volts = 'V',
-  kelvin = 'K',
-  hPa = 'hPa',
-  percentRH = '%RH',
-  lux = 'lux',
+  adc12bit = 'adc12bit',
+  celcius = 'ºC',
   g = 'g',
   gauss = 'G',
-  adc12bit = 'adc12bit',
+  hPa = 'hPa',
+  kelvin = 'K',
+  lux = 'lux',
+  percentRH = '%RH',
+  volts = 'V',
 }
 export class SensorsValues {
   voltage: number | null = null
@@ -48,5 +49,35 @@ export default class Sensors {
 
   get updatedAtString(): string {
     return this.updatedAt ? `${this.updatedAt?.toDateString()}, ${this.updatedAt?.toLocaleTimeString()}` : ''
+  }
+
+  get timeSinceLastUpdate(): number {
+    return this.updatedAt ? new Date().getTime() - this.updatedAt.getTime() : 0
+  }
+
+  get timeSinceLastUpdateStr(): string {
+    const ms = this.timeSinceLastUpdate
+    const seconds = Math.floor(ms / 1000)
+    const minutes = Math.floor(seconds / 60)
+    const hours = Math.floor(minutes / 60)
+    const days = Math.floor(hours / 24)
+    const years = Math.floor(days / 365)
+    const s = seconds % 60
+    const m = minutes % 60
+    const h = hours % 24
+    const d = days % 365
+    const y = years
+
+    let res = `${s}s`
+    res = (m ? `${m}m ` : '') + res
+    res = (h ? `${h}h ` : '') + res
+    res = (d ? `${d}d ` : '') + res
+    res = (y ? `${y}y ` : '') + res
+
+    return res
+  }
+
+  get isOtherSensorsAvailable(): boolean {
+    return this.temperature !== null || this.humidity !== null || this.pressure !== null || this.luminosity !== null
   }
 }

@@ -14,6 +14,17 @@ const DEVICE_DATA = gql`
       luminosity
       updatedAt
     }
+    hardwareInfo {
+      deviceType
+      hwVersion
+      fwVersionMajor
+      fwVersionMinor
+      button1Presses
+      button2Presses
+      button3Presses
+      lifetimeTxCount
+      lastConnector
+    }
   }
 `
 

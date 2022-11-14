@@ -39,23 +39,23 @@ const axiosAuthInstance = axios.create({
 const authService = new AuthService(axiosAuthInstance)
 
 // *** Init router with navigation Guard: Check if user is logged in and token is still valid, redirect to login page if not
-router.beforeEach(async (to, from, next) => {
-  let isAuthenticated = false
+// router.beforeEach(async (to, from, next) => {
+//   let isAuthenticated = false
 
-  // If there is no user info, token is invalid
-  const userInfo = await authService.getUserInfo()
-  if (userInfo) {
-    isAuthenticated = true
-  } else {
-    authService.logout()
-  }
+//   // If there is no user info, token is invalid
+//   const userInfo = await authService.getUserInfo()
+//   if (userInfo) {
+//     isAuthenticated = true
+//   } else {
+//     authService.logout()
+//   }
 
-  if (!isAuthenticated && to.name !== 'login') {
-    next({ name: 'login' })
-  } else {
-    next()
-  }
-})
+//   if (!isAuthenticated && to.name !== 'login') {
+//     next({ name: 'login' })
+//   } else {
+//     next()
+//   }
+// })
 
 if (import.meta.env.VITE_APP_GTM_ENABLED) {
   app.use(

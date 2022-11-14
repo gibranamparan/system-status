@@ -1,24 +1,23 @@
 <template>
-  <div class="markup-tables flex">
+  <va-card>
+    <va-card-content>
+      <div class="row">
+        <va-input v-model="filter" class="flex mb-2 md6" placeholder="Filter device by name or mac..." />
+      </div>
+    </va-card-content>
+  </va-card>
+  <div class="row">
+    <div v-for="device in devicesData" :key="device.id || undefined" class="flex md2">
+      <DeviceCard class="item" :model-value="device" />
+    </div>
+  </div>
+  <!-- <div class="markup-tables flex">
     <va-card>
-      <va-card-title>Devices</va-card-title>
       <va-card-content>
-        <div class="row">
-          <va-input v-model="filter" class="flex mb-2 md6" placeholder="Filter..." />
-        </div>
-        <div class="row">
-          <DeviceCard
-            v-for="device in devicesData"
-            :key="device.id || undefined"
-            class="flex md"
-            :model-value="device"
-          />
-        </div>
         <div class="table-wrapper">
           <va-data-table
             :items="devicesData"
             :columns="columns"
-            :filter="filter"
             items-track-by="mac"
             hoverable
             striped
@@ -40,7 +39,7 @@
         </div>
       </va-card-content>
     </va-card>
-  </div>
+  </div> -->
 </template>
 
 <script setup lang="ts">
@@ -54,11 +53,21 @@
 
   const { result } = useQuery<DevicesDataResults>(GET_DEVICES_DATA, null, {
     fetchPolicy: 'cache-and-network',
-    // pollInterval: 1000
+    pollInterval: 2000,
   })
 
   const devicesData = computed((): DeviceData[] => {
-    return result?.value?.devices?.map((d) => new DeviceData(d)).filter((d) => d.sensorsReadings) || []
+    return (
+      result?.value?.devices
+        ?.map((d) => new DeviceData(d))
+        .filter(
+          (d) =>
+            d.sensorsReadings &&
+            (d.name?.toLowerCase().includes(filter.value.toLowerCase()) ||
+              d.mac?.toLowerCase().includes(filter.value.toLowerCase())),
+        )
+        .sort((a, b) => a.name?.toLowerCase().localeCompare(b.name?.toLowerCase() || '') || 0) || []
+    )
   })
   const columns = [
     { key: 'name', label: 'Device', sortable: true },
@@ -66,12 +75,7 @@
     { key: 'type', label: 'Type', sortable: true },
     { key: 'voltage', label: 'voltage', sortable: true },
     { key: 'sensorsReadings', label: 'Other Sensor Readings' },
-    { key: 'latestTimestamp', label: 'Latest Timestamp', sortable: true },
-    // { key: 'buttonPressCounts', label: 'Button Press Counts', sortable: true },
-    // { key: 'lastConnectorMac', label: 'Last Connector Mac', sortable: true },
-    // { key: 'lifetimeTxCount', label: 'Lifetime Tx Count', sortable: true },
-    // { key: 'firmwareVersion', label: 'Firmware Version', sortable: true },
-    // { key: 'hardwareVersion', label: 'Hardware Version', sortable: true },
+    { key: 'lastUpdateAtStr', label: 'Latest Timestamp', sortable: true },
   ]
   const filter = ref('')
 </script>
