@@ -50,7 +50,6 @@
 </template>
 <script setup lang="ts">
   import DeviceData from '@/models/device-data'
-  import { defaultInterpolate } from '@amcharts/amcharts5/.internal/core/util/Animation'
   import { computed } from 'vue'
 
   const props = defineProps(['modelValue'])
@@ -86,6 +85,7 @@
   .va-card__title {
     padding: 0.8rem 0.8rem 0;
     h1 {
+      font-size: 0.8rem;
       color: var(--va-primary);
     }
   }
@@ -95,8 +95,6 @@
     .hardware-data {
       font-size: 0.95rem;
       .va-progress-circle {
-        // width: 100%;
-        // height: 60px;
         .va-progress-circle__content {
           font-size: 0.75rem;
         }
@@ -120,7 +118,7 @@
     height: 10px;
     border-radius: 50%;
     background-color: rgba(0, 0, 0, 0.5);
-    // box-shadow: #000 0 -1px 6px 1px;
+    box-shadow: #000 0 -1px 3px 1px;
   }
   .led-green {
     background-color: #80ff00;
